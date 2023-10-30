@@ -1,4 +1,4 @@
-from operator import attrgetter
+from operator import attrgetter, itemgetter
 from typing import TypeVar, Generic, Any, Callable, Type, Optional, cast
 
 T = TypeVar('T')
@@ -12,7 +12,7 @@ class Bag(Generic[T]):
 
     _value: T | Unset = Unset()
     _source: Callable[[], T]
-    _op = None
+    _op: Optional[Callable[[T], Any]] = None
 
     def __init__(self, value_or_source: T | Callable[[], T]) -> None:
         if callable(value_or_source):
@@ -33,4 +33,9 @@ class Bag(Generic[T]):
     def __getattr__(self, name: str) -> 'Bag[Any]':
         bag = Bag[Any](self.get)
         bag._op = attrgetter(name)
+        return bag
+
+    def __getitem__(self, name: str) -> 'Bag[Any]':
+        bag = Bag[Any](self.get)
+        bag._op = itemgetter(name)
         return bag
